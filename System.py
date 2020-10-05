@@ -13,41 +13,49 @@ from ctypes import c_char_p
 #_  __/    _  /    / /_/ / _(__  ) / /_  _  /    / /_/ / / /_  /  __// /_/ /         / /_  _  /    _  /  / /_/ / _  / / /_  /_/ / _  /  /  __/       _(__  ) _  /_/ / _(__  ) / /_  /  __/_  / / / / /
 #/_/       /_/     \__,_/  /____/  \__/  /_/     \__,_/  \__/  \___/ \__,_/          \__/  /_/     /_/   \__,_/  /_/ /_/ _\__, /  /_/   \___/        /____/  _\__, /  /____/  \__/  \___/ /_/ /_/ /_/
 #                                                                                                                        /____/                              /____/
+     # i,j,1___________i,j,0
+         # /            \
+        # /              \
+# i,j,2  /     i,j        \ i,j,5
+       # \                /
+        # \              /
+# i,j,3    \___________/ i,j,4
 #
-#      ____________                      0
-#     /\          /\                    /\
-#    /  \ i,j+1,3/  \                  /  \
-#   /i-1 \      /    \                /    \
-#  /j+1,4 \    / i+1  \              / i,j  \    (i+j)%2==1
-# /        \  /,j+1,2  \            /        \
-#/__________\/__________\         2/__________\4
-#\          /\   i+1    /
-# \ i-1    /  \  ,j,1  /          1____________5
-#  \,j,5  /    \      /            \          /
-#   \    /      \    /              \  i,j   /
-#    \  /  i,j,0 \  /                \      /    (i+j)%2==0
-#     \/__________\/                  \    /
-#                                      \  /
-#                                       \/
-#                                        3
+                       # __________
+                      # /          \
+                     # /            \
+          # __________/              \__________
+         # /          \       i,j+1,4/          \
+        # /            \ i,j+1,3    /            \
+       # /   i-1,j+1,5  \__________/    i+1,j,2   \
+       # \              /    i,j,0 \              /
+        # \            / i,j,1      \            /
+         # \__________/              \__________/
+                    # \              /
+                     # \            /
+                      # \__________/
 #
-#
-#                  6            7_________________________11
-#                 /\             \                        /
-#                /  \             \    1___________ 5    /
-#               /    \             \    \          /    /
-#              /      \             \    \  i,j   /    /
-#             /        \             \    \      /    /
-#            /     0    \             \    \    /    /
-#           /     /\     \             \    \  /    /
-#          /     /  \     \             \    \/    /
-#         /     /    \     \             \    3   /
-#        /     /      \     \             \      /
-#       /     /   i,j  \     \             \    /
-#      /   2 /__________\4    \             \  /
-#    8/________________________\10           \/
-#                                             9
+                      # __________
+                     # /          \
+                    # /            \
+        # __________ /     i,j+1    \__________
+       # /           \              /          \
+      # /             \      1     /            \
+     # /    i-1,j+1    \__________/   i+1,j      \
+     # \               /          \              /
+      # \      2      /            \   0        /
+       # \___________/     i,j      \__________/
+       # /           \              /          \
+      # /             \            /            \
+     # /   i-1,j       \__________/    i+1,j-1   \
+     # \       3      /           \       5      /
+      # \            /             \            /
+       # \_________ /    i,j-1      \__________/
+                  # \       4      /
+                   # \            /
+                    # \__________/
 
+#
 #This python object make the interface between the cpp program called : lib.so
 #We suppose the library has  already  been  compiled.  it  has  few  function:
 # lib.CreateSystem : create a system of particle, given an input  array (which
@@ -139,7 +147,7 @@ class System:
         self.eps=eps
         self.ActualizeNp() # keep track of the number of particle (number of 1) in the system
         #---------------------Create the cpp object-------------------------
-        self.Adress=lib.CreateSystem(Arraycpp,self.Lx,self.Ly,eps,Kmain,Kcoupling,Kvol) # create the system, all the argument are require here !!!!
+        self.Adress=lib.CreateSystem(Arraycpp,self.Lx,self.Ly,self.eps,self.Kmain,self.Kcoupling,self.KVOL) # create the system, all the argument are require here !!!!
         #--------------------Store the value of the Energy------------------
         self.Energy=lib.GetSystemEnergy(self.Adress) # store the value of the Energy (get energy only returns a number and doesn't reactualize the equilibrium of the system).
     def Copy(self,old_system):

@@ -5,10 +5,9 @@ class Node{
   Node();
   Node(Site* S,int k ,double eps);
   ~Node();
-  
+
   std::map<int,int> g_I() const;
   std::map<int,int> g_J() const;
-  int g_dim() const;
 
   int g_IX() const;
   int g_IY() const;
@@ -29,6 +28,5 @@ class Node{
   std::map<int,int> J;
   int IX,IY;
   double X,Y;
-  int dim;
 };
 #endif

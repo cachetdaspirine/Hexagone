@@ -31,11 +31,10 @@ System::System(int* Array, int sizeX, int sizeY,double epsilon,double Kmain,doub
   DEBUG_IF(true){cout<<"Make the springs"<<endl;}
   MakeSprings();
   MakeSpring3();
-  
-  // Build the CG
-  DEBUG_IF(true){cout<<"Build the CG"<<endl;}  
-  cg=new CG(K1,eps,K2,Kvol,sites.size());
 
+  // Build the CG
+  DEBUG_IF(true){cout<<"Build the CG"<<endl;}
+  cg=new CG(K1,eps,K2,Kvol,sites.size());
   // Compute the Energy of the system
   DEBUG_IF(true){cout<<"Compute the Energy"<<endl;}
   ComputeEnergy();
@@ -62,10 +61,10 @@ System::System(const System& old_system)
       catch(const std::out_of_range& oor){
 	Node* node=new Node(*(it2.second));
       for(auto& it3 : node->g_I()){
-	nodes[it3.first][{node->g_I()[it3.first],node->g_J()[it3.first],it2.second->g_dim()}]=node;
+	nodes[it3.first][{node->g_I()[it3.first],node->g_J()[it3.first]}]=node;
       }
       }
-    }} 
+    }}
   MakeSprings();
   MakeSpring3();
   cg=new CG(K1,eps,K2,Kvol,sites.size());
@@ -73,7 +72,7 @@ System::System(const System& old_system)
 
   Energy=old_system.Energy;
 
-  // }}}  
+  // }}}
 }
 System::~System()
 {
@@ -85,9 +84,9 @@ System::~System()
   for(auto& it : springs3){delete it.second;}
   springs3.clear();
   DEBUG_IF(true){cout<<"delete the inner nodes"<<endl;}
-  for(auto& it : nodes[0]){/*cout<<"delete "<<it.first.first<<" "<<it.first.second<<endl;*/delete it.second;}
+  for(auto& it : nodes[0]){delete it.second;}
+  for(auto& it : nodes[1]){delete it.second;}
   DEBUG_IF(true){cout<<"delete the outter nodes"<<endl;}
-  for(auto& it : nodes[6]){/*cout<<"delete "<<it.first.first<<" "<<it.first.second<<endl;*/delete it.second;}
   nodes.clear();
   DEBUG_IF(true){cout<<"delete the inner Sites"<<endl;}
   for(auto& it : sites){delete it.second;}
@@ -114,55 +113,20 @@ void System::UpdateEnergy(int *Array, int SizeX, int SizeY)
     }
   for(int i = 0 ; i <SizeX*SizeY ; i++)
     {CurrentState[i]=Array[i];}
-  //Only the nodes are deleted selectively
-  //------------------------------------------------------------------------------
-  //------------------------------------------------------------------------------
-  /*
-  for(auto& SiteIt : RemovedSite)
-    {
-      int i(SiteIt%SizeX),j(SiteIt/SizeX);
-      cout<<"Removed Site : "<<i<<" "<<j<<endl;
-      vector<int> NodesInd(g_nodes_from_site(i,j));
-      for(auto& k : NodesInd){
-	map<int,vector<int>> NodeVect(get_all(i,j,k));
-	for(auto& SiteNodesIt : NodeVect)
-	  {
-	    DeleteAllNode(SiteNodesIt.second[0],SiteNodesIt.second[1]);
-	  }
-      }
-    }
-  for(auto& SiteIt : AddedSite)
-    {
-      int i(SiteIt%SizeX),j(SiteIt/SizeX);
-      cout<<"Added Site : "<<i<<" "<<j<<endl;
-      vector<int> NodesInd(g_nodes_from_site(i,j));
-      for(auto& k : NodesInd){
-	map<int,vector<int>> NodeVect(get_all(i,j,k));
-	for(auto& SiteNodesIt : NodeVect)
-	  {
-	    DeleteAllNode(SiteNodesIt.second[0],SiteNodesIt.second[1]);
-	  }
-      }
-    }
-  */
-  //for(auto& it: sites){DeleteAllNode(it.second->g_I(), it.second->g_J());}
-  //for(auto& it : nodes){cout<<it.second.size()<<endl;}
-  //------------------------------------------------------------------------------
-  //------------------------------------------------------------------------------
   // Save the nodes index:
     DEBUG_IF(true){cout<<"Save Nodes Position"<<endl;}
-  map<tuple<int,int,int,int>,double> SaveX;
-  map<tuple<int,int,int,int>,double> SaveY;
+  map<tuple<int,int,int>,double> SaveX;
+  map<tuple<int,int,int>,double> SaveY;
   for(auto& it : nodes[0])
     {
-      SaveX[{0,get<0>(it.first),get<1>(it.first),get<2>(it.first)}]=it.second->g_X();
-      SaveY[{0,get<0>(it.first),get<1>(it.first),get<2>(it.first)}]=it.second->g_Y();
+      SaveX[{0,get<0>(it.first),get<1>(it.first)}]=it.second->g_X();
+      SaveY[{0,get<0>(it.first),get<1>(it.first)}]=it.second->g_Y();
     }
-  for(auto& it : nodes[6])
-    {
-      SaveX[{6,get<0>(it.first),get<1>(it.first),get<2>(it.first)}]=it.second->g_X();
-      SaveY[{6,get<0>(it.first),get<1>(it.first),get<2>(it.first)}]=it.second->g_Y();
-    }
+    for(auto& it : nodes[1])
+      {
+        SaveX[{1,get<0>(it.first),get<1>(it.first)}]=it.second->g_X();
+        SaveY[{1,get<0>(it.first),get<1>(it.first)}]=it.second->g_Y();
+      }
   //delete We delete all the sites/spring/spring3
   DEBUG_IF(true){cout<<"delete spring"<<endl;}
   for(auto& it : springs){delete it.second;}
@@ -177,7 +141,7 @@ void System::UpdateEnergy(int *Array, int SizeX, int SizeY)
   DEBUG_IF(true){cout<<"delete nodes"<<endl;}
   //for(auto& it: nodes){for(auto& it2 : it.second){delete it2.second;}}
   for(auto& it:nodes[0]){delete it.second;}
-  for(auto& it:nodes[6]){delete it.second;}
+  for(auto& it:nodes[1]){delete it.second;}
   nodes.clear();
   DEBUG_IF(true){cout<<"nodes all deleted"<<endl;}
   //--------------------------------
@@ -187,14 +151,12 @@ void System::UpdateEnergy(int *Array, int SizeX, int SizeY)
   MakeSpring3();
   for(auto& it : SaveX)
     {
-      try{nodes[get<0>(it.first)].at({get<1>(it.first),get<2>(it.first),get<3>(it.first)});
-	  nodes[get<0>(it.first)][{get<1>(it.first),get<2>(it.first),get<3>(it.first)}]->set_X(it.second);}
+      try{nodes[get<0>(it.first)].at({get<1>(it.first),get<2>(it.first)})->set_X(it.second);}
       catch(std::out_of_range oor){}
     }
   for(auto& it : SaveY)
     {
-      try{nodes[get<0>(it.first)].at({get<1>(it.first),get<2>(it.first),get<3>(it.first)});
-	  nodes[get<0>(it.first)][{get<1>(it.first),get<2>(it.first),get<3>(it.first)}]->set_Y(it.second);}
+      try{nodes[get<0>(it.first)].at({get<1>(it.first),get<2>(it.first)})->set_Y(it.second);}
       catch(std::out_of_range oor){}
       }
   DEBUG_IF(true){cout<<"rebuild nodes position"<<endl;}
@@ -210,9 +172,9 @@ void System::ComputeEnergy()
   for(auto& it: nodes[0]){
     nodetovect.push_back(it.second);
   }
-  for(auto& it: nodes[6]){
+  for(auto& it: nodes[1]){
     nodetovect.push_back(it.second);
-    }
+  }
   cg->RemakeDoF(nodetovect);
   cg->RemakeSprings(springs);
   cg->RemakeSpring3(springs3);
@@ -221,12 +183,12 @@ void System::ComputeEnergy()
   cg->ActualizeGPosition(sites,nodes);
   Energy=cg->GetEnergy();
   if(Re){return;}
-  if(cg->CheckStability())
+  /*if(cg->CheckStability())
     {
       ResetNodePosition();
       Re=true;
       goto Evolv;
-    }
+    }*/
 }
 double System::get_Energy() const {return Energy;}
 
@@ -235,7 +197,7 @@ void System::ResetNodePosition()
 {
   int count(0);
   for(auto& it : nodes[0]){it.second->ResetPosition(0);count++;}
-  for(auto& it : nodes[6]){it.second->ResetPosition(6);count++;}
+  for(auto& it : nodes[1]){it.second->ResetPosition(1);count++;}
 }
 void System::MakeSites()
 {
@@ -243,7 +205,7 @@ void System::MakeSites()
     if(CurrentState[i]==1){
       try{sites.at(i);}
       catch(const std::out_of_range& oor){
-	sites[i]=new Site(i%Lx,i/Lx,set_dim(i,CurrentState,Lx,Ly),NULL);
+	sites[i]=new Site(i%Lx,i/Lx,NULL);
       }
     }
   }
@@ -265,33 +227,32 @@ void System::ActualizeSites(std::vector<int>& Removed, std::vector<int>& Added)
       {
 	try{sites.at(IN[n]+JN[n]*Lx);}
 	catch(std::out_of_range oor){continue;}
-	sites[it]=new Site(it%Lx,it/Lx,set_dim(it,CurrentState,Lx,Ly),sites[IN[n]+JN[n]*Lx]);
+	sites[it]=new Site(it%Lx,it/Lx,sites[IN[n]+JN[n]*Lx]);
 	goto NEXT;
       }
-    sites[it]=new Site(it%Lx,it/Lx,set_dim(it,CurrentState,Lx,Ly),NULL);
+    sites[it]=new Site(it%Lx,it/Lx,NULL);
   NEXT:
     continue;
   }
-  for(auto& it : sites){it.second->RemakeDim(set_dim(it.first,CurrentState,Lx,Ly));}
 }
 void System::MakeNodes()
 {
   // look at every sites
   for(auto& it : sites){
     // pick each index that has to be created for this site
-    vector<int> nodes_to_create(it.second->g_nodes_to_create());
+    vector<int> nodes_to_create(it.second->g_nodes());
     for(auto& index :nodes_to_create){
       // Look at the map if we can find this node
-      try{nodes[index].at({it.second->g_I(),it.second->g_J(),it.second->g_dim(index)});}
+      try{nodes[index].at({it.second->g_I(),it.second->g_J()});}
       // if not we create one
-      catch(const std::out_of_range& oor){       
+      catch(const std::out_of_range& oor){
 	Node* node=new Node(it.second,index,eps);
 	//arrange the new node in all the containers
 	for(auto & it2 : node->g_I()){
-	  nodes[it2.first][{node->g_I()[it2.first],node->g_J()[it2.first],it.second->g_dim(index)}]=node;
+	  nodes[it2.first][{node->g_I()[it2.first],node->g_J()[it2.first]}]=node;
 	}
-      }      
-    } 
+      }
+    }
   }
 }
 void System::MakeSprings()
@@ -306,23 +267,23 @@ void System::MakeSprings()
       Node* N1;
       Node* N2;
       // Make sure that the N1>N2
-      if(nodes[it2.first][{it.second->g_I(),it.second->g_J(),it.second->g_dim(it2.first)}]
-	 >nodes[it2.second][{it.second->g_I(),it.second->g_J(),it.second->g_dim(it2.second)}])
+      if(nodes[it2.first][{it.second->g_I(),it.second->g_J()}]
+	 >nodes[it2.second][{it.second->g_I(),it.second->g_J()}])
 	{
-	  N1=nodes[it2.first][{it.second->g_I(),it.second->g_J(),it.second->g_dim(it2.first)}];
-	  N2=nodes[it2.second][{it.second->g_I(),it.second->g_J(),it.second->g_dim(it2.second)}];
+	  N1=nodes[it2.first][{it.second->g_I(),it.second->g_J()}];
+	  N2=nodes[it2.second][{it.second->g_I(),it.second->g_J()}];
 	}
       else
 	{
-	  N1=nodes[it2.second][{it.second->g_I(),it.second->g_J(),it.second->g_dim(it2.second)}];
-	  N2=nodes[it2.first][{it.second->g_I(),it.second->g_J(),it.second->g_dim(it2.first)}];	  
+	  N1=nodes[it2.second][{it.second->g_I(),it.second->g_J()}];
+	  N2=nodes[it2.first][{it.second->g_I(),it.second->g_J()}];
 	}
       try{springs.at({N1,N2})->Multiplicitypp();}
       catch(const std::out_of_range& oor){
 	springs[{N1,N2}]=new Spring(N1,N2
 				    ,getK(it2.first,it2.second,this)
-				    ,getL0(it2.first,it2.second,this));	
-      }      
+				    ,getL0(it2.first,it2.second,this));
+      }
     }
   }
 }
@@ -331,9 +292,9 @@ void System::MakeSpring3(){
     int i(it.second->g_I()),j(it.second->g_J());
     vector<vector<int>> Index(GetSpring3Adjacency(i,j));
     for(int n=0;n<Index.size();n++){
-      springs3[{it.first,n}]= new Spring3(nodes[Index[n][0]][{i,j,it.second->g_dim(Index[n][0])}]
-				     ,nodes[Index[n][1]][{i,j,it.second->g_dim(Index[n][1])}]
-					  ,nodes[Index[n][2]][{i,j,it.second->g_dim(Index[n][2])}]
+      springs3[{it.first,n}]= new Spring3(nodes[Index[n][0]][{i,j}]
+				     ,nodes[Index[n][1]][{i,j}]
+					  ,nodes[Index[n][2]][{i,j}]
 				     ,getKvol(Index[n][0],Index[n][1],Index[n][2],this)
 				     ,getA0(Index[n][0],Index[n][1],Index[n][2],this));
     }
@@ -363,11 +324,11 @@ void System::OutputSite(const char* filename)
   Out.open(filename, ofstream::out | ofstream::trunc);
   for(auto& it: sites)
     {
-      vector<int> Index(it.second->g_nodes_to_output());
+      vector<int> Index(it.second->g_nodes());
       int i(it.second->g_I()),j(it.second->g_J());
       for(auto& ind:Index)
 	{
-	  Out<<nodes[ind][{i,j,it.second->g_dim(ind)}]->g_X()<<" "<<nodes[ind][{i,j,it.second->g_dim(ind)}]->g_Y()<<" ";
+	  Out<<nodes[ind][{i,j}]->g_X()<<" "<<nodes[ind][{i,j}]->g_Y()<<" ";
 	}
       Out<<"\n";
     }

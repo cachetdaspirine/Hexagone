@@ -17,7 +17,7 @@ void CG::RemakeDoF(vector<Node*> nodes){
     nodes[i]->set_IX(2*i);
     DoF[2*i+1]=nodes[i]->g_Y();
     nodes[i]->set_IY(2*i+1);
-  }  
+  }
 }
 
 void CG::RemakeSprings(std::map<std::pair<Node*, Node*>, Spring*> springs){
@@ -54,7 +54,7 @@ void CG::ActualizeNodePosition(std::vector<Node*> nodes){
       }
   }
 }
-void CG::ActualizeGPosition(std::map<int,Site*> sites, std::map<int,std::map<std::tuple<int,int,int>,Node*>> nodes)
+void CG::ActualizeGPosition(std::map<int,Site*> sites, std::map<int,std::map<std::tuple<int,int>,Node*>> nodes)
 {
   for(auto& it : sites)
     {
@@ -62,8 +62,8 @@ void CG::ActualizeGPosition(std::map<int,Site*> sites, std::map<int,std::map<std
       vector<int> NodesIndex(g_nodes_from_site(it.second->g_I(),it.second->g_J()));
       for(auto& Ind : NodesIndex)
 	{
-	  Xg+=nodes[Ind][{it.second->g_I(),it.second->g_J(),it.second->g_dim(Ind)}]->g_X()/6.;
-	  Yg+=nodes[Ind][{it.second->g_I(),it.second->g_J(),it.second->g_dim(Ind)}]->g_Y()/6.;
+	  Xg+=nodes[Ind][{it.second->g_I(),it.second->g_J()}]->g_X()/6.;
+	  Yg+=nodes[Ind][{it.second->g_I(),it.second->g_J()}]->g_Y()/6.;
 	}
       it.second->set_G(Xg,Yg);
     }
