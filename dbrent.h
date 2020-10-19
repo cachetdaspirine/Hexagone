@@ -17,7 +17,7 @@ struct Dbrent : Bracketmethod {
 //	abscissa of the minimum is returned as xmin, and the minimum function value is returned
 //	as min, the returned function value.
 	{
-		const Int ITMAX=100;
+		const Int ITMAX=1000;
 		const Doub ZEPS=numeric_limits<Doub>::epsilon()*1.0e-3;
 		Bool ok1,ok2; //Will be used as flags for whether pro-
 		Doub a,b,d=0.0,d1,d2,du,dv,dw,dx,e=0.0; //posed steps are acceptable or not.
@@ -109,5 +109,3 @@ struct Dbrent : Bracketmethod {
 };
 
 #endif /*DBRENT_H_*/
-				
-				

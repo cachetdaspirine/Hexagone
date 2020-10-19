@@ -3,6 +3,7 @@
 using namespace std;
 
 CG::CG(double K, double EPS, double KAPPA,double KVOL,int Npart){
+  eps = EPS;
   BulkEnergy=3*K*EPS*EPS;
   BulkEnergy+=3*KAPPA*pow(sqrt(pow(EPS * 2 / sqrt(3)+ sqrt(3)/2*(1-EPS),2)+pow((1-EPS)/2,2))-1,2);
   BulkEnergy+=KVOL*EPS*EPS*3./4.;
@@ -17,7 +18,7 @@ void CG::RemakeDoF(vector<Node*> nodes){
     nodes[i]->set_IX(2*i);
     DoF[2*i+1]=nodes[i]->g_Y();
     nodes[i]->set_IY(2*i+1);
-  }  
+  }
 }
 
 void CG::RemakeSprings(std::map<std::pair<Node*, Node*>, Spring*> springs){
@@ -36,6 +37,8 @@ void CG::Evolv(){
   Frprmn<Ham> frprmn(ham);
   DoF=frprmn.minimize(DoF);
   Energy=ham(DoF);
+  // output the energy of each type of springs
+  //ham.CheckSprings(DoF,1-eps,1+eps,sqrt(1./3.+pow(eps,2)));
 }
 bool CG::CheckStability(){
   if(ham(DoF)>BulkEnergy)
@@ -54,7 +57,7 @@ void CG::ActualizeNodePosition(std::vector<Node*> nodes){
       }
   }
 }
-void CG::ActualizeGPosition(std::map<int,Site*> sites, std::map<int,std::map<std::tuple<int,int,int>,Node*>> nodes)
+void CG::ActualizeGPosition(std::map<int,Site*> sites, std::map<int,std::map<std::tuple<int,int>,Node*>> nodes)
 {
   for(auto& it : sites)
     {
@@ -62,8 +65,8 @@ void CG::ActualizeGPosition(std::map<int,Site*> sites, std::map<int,std::map<std
       vector<int> NodesIndex(g_nodes_from_site(it.second->g_I(),it.second->g_J()));
       for(auto& Ind : NodesIndex)
 	{
-	  Xg+=nodes[Ind][{it.second->g_I(),it.second->g_J(),it.second->g_dim(Ind)}]->g_X()/6.;
-	  Yg+=nodes[Ind][{it.second->g_I(),it.second->g_J(),it.second->g_dim(Ind)}]->g_Y()/6.;
+	  Xg+=nodes[Ind][{it.second->g_I(),it.second->g_J()}]->g_X()/6.;
+	  Yg+=nodes[Ind][{it.second->g_I(),it.second->g_J()}]->g_Y()/6.;
 	}
       it.second->set_G(Xg,Yg);
     }

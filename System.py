@@ -7,47 +7,55 @@ from ctypes import POINTER
 from ctypes import c_void_p
 from ctypes import c_char_p
 
-#__________                        _____                 _____       _________       _____         _____                          ______                                      _____                   
-#___  ____/____________  ____________  /_______________ ___  /______ ______  /       __  /____________(_)______ ________ _______ ____  /_____        _____________  ____________  /______ _______ ___ 
+#__________                        _____                 _____       _________       _____         _____                          ______                                      _____
+#___  ____/____________  ____________  /_______________ ___  /______ ______  /       __  /____________(_)______ ________ _______ ____  /_____        _____________  ____________  /______ _______ ___
 #__  /_    __  ___/_  / / /__  ___/_  __/__  ___/_  __ `/_  __/_  _ \_  __  /        _  __/__  ___/__  / _  __ `/__  __ \__  __ `/__  / _  _ \       __  ___/__  / / /__  ___/_  __/_  _ \__  __ `__ \
 #_  __/    _  /    / /_/ / _(__  ) / /_  _  /    / /_/ / / /_  /  __// /_/ /         / /_  _  /    _  /  / /_/ / _  / / /_  /_/ / _  /  /  __/       _(__  ) _  /_/ / _(__  ) / /_  /  __/_  / / / / /
-#/_/       /_/     \__,_/  /____/  \__/  /_/     \__,_/  \__/  \___/ \__,_/          \__/  /_/     /_/   \__,_/  /_/ /_/ _\__, /  /_/   \___/        /____/  _\__, /  /____/  \__/  \___/ /_/ /_/ /_/ 
-#                                                                                                                        /____/                              /____/                                   
+#/_/       /_/     \__,_/  /____/  \__/  /_/     \__,_/  \__/  \___/ \__,_/          \__/  /_/     /_/   \__,_/  /_/ /_/ _\__, /  /_/   \___/        /____/  _\__, /  /____/  \__/  \___/ /_/ /_/ /_/
+#                                                                                                                        /____/                              /____/
+     # i,j,1___________i,j,0
+         # /            \
+        # /              \
+# i,j,2  /     i,j        \ i,j,5
+       # \                /
+        # \              /
+# i,j,3    \___________/ i,j,4
 #
-#      ____________                      0
-#     /\          /\                    /\
-#    /  \ i,j+1,3/  \                  /  \
-#   /i-1 \      /    \                /    \
-#  /j+1,4 \    / i+1  \              / i,j  \    (i+j)%2==1
-# /        \  /,j+1,2  \            /        \
-#/__________\/__________\         2/__________\4
-#\          /\   i+1    / 
-# \ i-1    /  \  ,j,1  /          1____________5
-#  \,j,5  /    \      /            \          /
-#   \    /      \    /              \  i,j   /
-#    \  /  i,j,0 \  /                \      /    (i+j)%2==0
-#     \/__________\/                  \    /
-#                                      \  /
-#                                       \/
-#                                        3
+                       # __________
+                      # /          \
+                     # /            \
+          # __________/              \__________
+         # /          \       i,j+1,4/          \
+        # /            \ i,j+1,3    /            \
+       # /   i-1,j+1,5  \__________/    i+1,j,2   \
+       # \              /    i,j,0 \              /
+        # \            / i,j,1      \            /
+         # \__________/              \__________/
+                    # \              /
+                     # \            /
+                      # \__________/
 #
-#
-#                  6            7_________________________11
-#                 /\             \                        /
-#                /  \             \    1___________ 5    /
-#               /    \             \    \          /    /
-#              /      \             \    \  i,j   /    /
-#             /        \             \    \      /    /
-#            /     0    \             \    \    /    /
-#           /     /\     \             \    \  /    /
-#          /     /  \     \             \    \/    /
-#         /     /    \     \             \    3   /
-#        /     /      \     \             \      /
-#       /     /   i,j  \     \             \    /
-#      /   2 /__________\4    \             \  /
-#    8/________________________\10           \/
-#                                             9
+                      # __________
+                     # /          \
+                    # /            \
+        # __________ /     i,j+1    \__________
+       # /           \              /          \
+      # /             \      1     /            \
+     # /    i-1,j+1    \__________/   i+1,j      \
+     # \               /          \              /
+      # \      2      /            \   0        /
+       # \___________/     i,j      \__________/
+       # /           \              /          \
+      # /             \            /            \
+     # /   i-1,j       \__________/    i+1,j-1   \
+     # \       3      /           \       5      /
+      # \            /             \            /
+       # \_________ /    i,j-1      \__________/
+                  # \       4      /
+                   # \            /
+                    # \__________/
 
+#
 #This python object make the interface between the cpp program called : lib.so
 #We suppose the library has  already  been  compiled.  it  has  few  function:
 # lib.CreateSystem : create a system of particle, given an input  array (which
@@ -63,7 +71,8 @@ from ctypes import c_char_p
 #output the position of the nodes site by site (a line  is  a  list  of  nodes
 #position linked to one site).
 # lib.OutputSystemSpring : same as outputsystemsite but sorted by spring
-lib = cdll.LoadLibrary('./lib.so')
+import os
+lib = cdll.LoadLibrary(os.path.dirname(os.path.realpath(__file__))+'/lib.so')
 
 lib.CreateSystem.restype=POINTER(c_void_p)
 lib.CreateSystem.argtypes=[POINTER(c_int) , c_int,c_int, c_double,c_double,c_double,c_double]
@@ -131,14 +140,14 @@ class System:
             Arraycpp[i]=array[i] # store all the array into this pointer array
         #-------------------------------------------------------------------
         # store the value of the elastic parameters
-        #-------------------------------------------------------------------        
+        #-------------------------------------------------------------------
         self.Kmain=Kmain
         self.Kcoupling=Kcoupling
         self.KVOL=Kvol
         self.eps=eps
         self.ActualizeNp() # keep track of the number of particle (number of 1) in the system
         #---------------------Create the cpp object-------------------------
-        self.Adress=lib.CreateSystem(Arraycpp,self.Lx,self.Ly,eps,Kmain,Kcoupling,Kvol) # create the system, all the argument are require here !!!!
+        self.Adress=lib.CreateSystem(Arraycpp,self.Lx,self.Ly,self.eps,self.Kmain,self.Kcoupling,self.KVOL) # create the system, all the argument are require here !!!!
         #--------------------Store the value of the Energy------------------
         self.Energy=lib.GetSystemEnergy(self.Adress) # store the value of the Energy (get energy only returns a number and doesn't reactualize the equilibrium of the system).
     def Copy(self,old_system):
@@ -160,7 +169,7 @@ class System:
         for j in reversed(range(self.state.shape[1])):
             for i in range(self.state.shape[0]):
                 print(str(self.state[i,j])+" ",end='')
-            print('\n',end='')       
+            print('\n',end='')
     def SetElasticConstant(self,Kmain=np.nan,Kcoupling=np.nan,epsilon=np.nan,KVOL=np.nan):
         # This is a single  function to  change any of the elastic constant.
         # the elastic constant for which we give a value is gonna be changed
@@ -182,7 +191,7 @@ class System:
         else :
             epsilon1=epsilon
         lib.SetElasticConstant(epsilon1,Kmain1,KCoupling1,KVOL1,self.Adress)
-    def Evolv(self,NewState):            
+    def Evolv(self,NewState):
         self.ActualizeNp()
         #------------Convert the new state into a pointer array-------------
         self.state=NewState
@@ -206,7 +215,7 @@ class System:
             self.Energy=lib.GetSystemEnergy(self.Adress)
             print('create a new system')
         else :
-            lib.UpdateSystemEnergy(self.Adress,Arraycpp,self.Lx,self.Ly) 
+            lib.UpdateSystemEnergy(self.Adress,Arraycpp,self.Lx,self.Ly)
             self.Energy=lib.GetSystemEnergy(self.Adress)
     def PrintPerSite(self,Name='NoName.txt'):
         # output the sytem per site (easier if you wanna plot the sites).
@@ -279,7 +288,7 @@ class System:
         XC=sum(X1)/X1.shape[0]
         YC=sum(Y1)/Y1.shape[0]
         ax.set_xlim([XC-1/Zoom*np.sqrt(Data.shape[0]/12.),XC+1/Zoom*np.sqrt(Data.shape[0]/12.)])
-        ax.set_ylim([YC-1/Zoom*np.sqrt(Data.shape[0]/12.),YC+1/Zoom*np.sqrt(Data.shape[0]/12.)])        
+        ax.set_ylim([YC-1/Zoom*np.sqrt(Data.shape[0]/12.),YC+1/Zoom*np.sqrt(Data.shape[0]/12.)])
         plot=ax.quiver(X1,Y1,X2-X1,Y2-Y1,C1-C0,
              scale = 1.0,angles='xy',scale_units = 'xy',width = 0.002,minlength=0.,headlength=0.,
              headaxislength=0.,headwidth=0.,alpha=1,edgecolor='k',cmap=cm)
@@ -295,4 +304,3 @@ class System:
             self.Np=dict(zip(unique, counts))[1]
         except:
             self.Np=0
-        
