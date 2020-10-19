@@ -12,6 +12,7 @@ class CG{
   void Evolv();
   bool CheckStability();
  private:
+  double eps;
   Ham ham;
   VecDoub DoF;
   double Energy,BulkEnergy;

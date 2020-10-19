@@ -31,7 +31,7 @@ System::System(int* Array, int sizeX, int sizeY,double epsilon,double Kmain,doub
   DEBUG_IF(true){cout<<"Make the springs"<<endl;}
   MakeSprings();
   MakeSpring3();
-
+  //OutputSpring("Pre_Energy_Test.txt");
   // Build the CG
   DEBUG_IF(true){cout<<"Build the CG"<<endl;}
   cg=new CG(K1,eps,K2,Kvol,sites.size());

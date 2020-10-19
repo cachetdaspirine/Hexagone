@@ -3,6 +3,7 @@
 using namespace std;
 
 CG::CG(double K, double EPS, double KAPPA,double KVOL,int Npart){
+  eps = EPS;
   BulkEnergy=3*K*EPS*EPS;
   BulkEnergy+=3*KAPPA*pow(sqrt(pow(EPS * 2 / sqrt(3)+ sqrt(3)/2*(1-EPS),2)+pow((1-EPS)/2,2))-1,2);
   BulkEnergy+=KVOL*EPS*EPS*3./4.;
@@ -36,6 +37,8 @@ void CG::Evolv(){
   Frprmn<Ham> frprmn(ham);
   DoF=frprmn.minimize(DoF);
   Energy=ham(DoF);
+  // output the energy of each type of springs
+  //ham.CheckSprings(DoF,1-eps,1+eps,sqrt(1./3.+pow(eps,2)));
 }
 bool CG::CheckStability(){
   if(ham(DoF)>BulkEnergy)
