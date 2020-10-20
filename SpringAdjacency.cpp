@@ -21,6 +21,10 @@ vector< pair<int,int> > GetSpringAdjacency(int i, int j){
   Res.push_back({4,5});
   Res.push_back({3,5});// #
 
+  /*Res.push_back({0,3});
+  Res.push_back({2,5});
+  Res.push_back({1,4 });*/
+
   return Res;
 }
 vector<vector<int>> GetSpring3Adjacency(int i, int j){
@@ -65,6 +69,21 @@ double getL0(int index1, int index2,System* system){
   if(index1 == 1 | index1 == 3 | index1 == 5){
     if(index2 == 1 | index2 == 3 | index2 == 5){
       return 1-system->eps;
+    }
+  }
+  if(index1 == 0 | index1 == 3){
+    if(index2 == 0 | index2 == 3){
+      return 2*sqrt(1./3.+pow(system->eps,2));
+    }
+  }
+  if(index1 == 1 | index1 == 4){
+    if(index2 == 1 | index2 == 4){
+      return 2*sqrt(1./3.+pow(system->eps,2));
+    }
+  }
+  if(index1 == 2 | index1 == 5){
+    if(index2 == 2 | index2 == 5){
+      return 2*sqrt(1./3.+pow(system->eps,2));
     }
   }
   return sqrt(1./3.+pow(system->eps,2));//0.5774;//sqrt(pow(system->eps * 2 / sqrt(3)+ sqrt(3)/2*(1-system->eps),2)+pow((1-system->eps)/2,2));
