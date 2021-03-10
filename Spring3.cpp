@@ -38,7 +38,7 @@ double Spring3::ComputeNRJ(VecDoub_I &x, double& Eflip){
   //------------------------------------------------
   //Computation of the volumique Energy
   //------------------------------------------------
-  double Evol(K/(2.)*pow(Air-A0,2));
+  double Evol(K/2.*pow(Air-A0,2));
   return Eflip+Evol;
 
 }

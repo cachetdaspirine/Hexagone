@@ -5,7 +5,8 @@ using namespace std;
 CG::CG(double K, double EPS, double KAPPA,double KVOL,int Npart){
   eps = EPS;
   BulkEnergy=3*K*EPS*EPS;
-  BulkEnergy+=3*KAPPA*pow(sqrt(pow(EPS * 2 / sqrt(3)+ sqrt(3)/2*(1-EPS),2)+pow((1-EPS)/2,2))-1,2);
+  //BulkEnergy+=3*KAPPA*pow(sqrt(pow(EPS * 2 / sqrt(3)+ sqrt(3)/2*(1-EPS),2)+pow((1-EPS)/2,2))-1,2);
+  BulkEnergy+=6 * KAPPA * pow(1./sqrt(3.)-sqrt(1./3.+pow(EPS,2)),2);
   BulkEnergy+=KVOL*EPS*EPS*3./4.;
   BulkEnergy=BulkEnergy*Npart;
   Energy=0;
@@ -32,7 +33,9 @@ void CG::RemakeSpring3(std::map<std::pair<int,int>,Spring3*> springs3){
 }
 
 double CG::GetEnergy(){return Energy;}
-
+double CG::ComputeEnergy(){
+return ham(DoF);
+}
 void CG::Evolv(){
   Frprmn<Ham> frprmn(ham);
   DoF=frprmn.minimize(DoF);

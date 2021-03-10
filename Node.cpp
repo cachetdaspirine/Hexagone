@@ -37,5 +37,5 @@ void Node::set_IY(int iy){IY=iy;}
 
 void Node::ResetPosition(int type)
 {
-  SetInitialPosition(X,Y,type,0.001,0.866*I[type],J[type]+0.5*I[type]);
+  SetInitialPosition(X,Y,type,0.,0.866*I[type],J[type]+0.5*I[type]);
 }

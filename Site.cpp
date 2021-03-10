@@ -22,7 +22,6 @@ vector<int> Site::g_nodes() const
 {
   return g_nodes_from_site(I,J);
 }
-
 int Site::g_I() const{return I;}
 int Site::g_J() const{return J;}
 void Site::set_G(double Xg,double Yg){X=Xg;Y=Yg;}

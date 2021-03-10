@@ -26,6 +26,16 @@ extern "C"
       }
     catch(int e){cout<<"Error "<<e<<"\n";}
   }
+  double GetBulkEnergy(void* ptr)
+  {
+    try
+    {
+    System* system = reinterpret_cast<System *>(ptr);
+    return system->Get_BulkEnergy();
+    }
+    catch(int e)
+    {cout<<"Error "<<e<<"\n";}
+  }
   void SetElasticConstant(double epsilon,double Kmain, double Kcoupling,double KVOL, void* ptr)
   {
     try
@@ -63,6 +73,15 @@ extern "C"
       {
 	System* system = reinterpret_cast<System *>(ptr);
 	system->OutputSpring(filename);
+      }
+    catch(int e){cout<<"error : "<<e<<"\n";}
+  }
+  void OutputSpringPerSite(void* ptr, const char* filename)
+  {
+    try
+      {
+  System* system = reinterpret_cast<System *>(ptr);
+  system->OutSpringPerSite(filename);
       }
     catch(int e){cout<<"error : "<<e<<"\n";}
   }

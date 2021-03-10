@@ -6,19 +6,23 @@ using namespace std;
 vector< pair<int,int> > GetSpringAdjacency(int i, int j){
   vector<pair<int,int>> Res;
   Res.push_back({0,1});
-  Res.push_back({0,5});
+  Res.push_back({1,2});
+  Res.push_back({2,3});
+  Res.push_back({3,4});
+  Res.push_back({4,5});
+  Res.push_back({5,0});
+
   Res.push_back({0,4});// #
   Res.push_back({0,2});// #
 
-  Res.push_back({1,2});
   Res.push_back({1,3});// #
   Res.push_back({1,5});// #
 
-  Res.push_back({2,3});
+
   Res.push_back({2,4});// #
 
-  Res.push_back({3,4});
-  Res.push_back({4,5});
+
+
   Res.push_back({3,5});// #
 
   /*Res.push_back({0,3});
