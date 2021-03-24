@@ -231,7 +231,7 @@ Evolv:
         }
 }
 double System::get_Energy() const {
-        return Energy;
+        return cg->ComputeEnergy();
 }
 
 // {{{ Private Function
@@ -431,29 +431,77 @@ double System::Get_BulkEnergy(){
         cg->RemakeSprings(springs);
         return cg->ComputeEnergy();
 }
-/*
-   void System::DeleteAllNode(int i, int j)
-   {
-   try{sites.at(i+Lx*j);}
-   catch(std::out_of_range oor){return;}
-   //Check all the node of the given site
-   //Build the vector of all the node we need to erase
-   vector<int> NodeInd(g_nodes_from_site(i,j));
-   for(auto& k : NodeInd)
-    {
-      int dim(sites[i+Lx*j]->g_dim(k));
-      map<int,vector<int>> allIndex(get_all(i,j,k));
-      //Try to delete the given node if not already done
-      try
-   {
-    nodes[k].at({i,j,dim});
-    delete nodes[k][{i,j,dim}];
-    //cout<<"Node removed : "<<i<<" "<<j<<" "<<k<<endl;
+void System::MoveNodes(double Gx, double Gy)
+{
+   for (auto& it : nodes[0]){
+     it.second->set_X((1+Gx)*it.second->g_X());
+     it.second->set_Y((1+Gy)*it.second->g_Y());
    }
-      catch(std::out_of_range oor){}
-      //Remove this node from every container
-      for(auto& it : allIndex)
-   {nodes[it.first].erase({it.second[0],it.second[1],dim});}
+   for (auto& it : nodes[1]){
+     it.second->set_X((1+Gx)*it.second->g_X());
+     it.second->set_Y((1+Gy)*it.second->g_Y());
    }
-   }*/
-// }}}
+   std::vector<Node*> nodetovect;
+     for(auto& it : nodes[0]){nodetovect.push_back(it.second);}
+     for(auto& it : nodes[1]){nodetovect.push_back(it.second);}
+   cg->RemakeDoF(nodetovect);
+}
+
+double System::Get_Extension(int ax)
+{
+  if(ax == 0){
+    vector<Node*> SidesLeft(GetSideNodes(true,false));
+    vector<Node*> SidesRight(GetSideNodes(false,false));
+    double XLeft(0),XRight(0);
+    for(auto& it : SidesLeft){
+      XLeft+=it->g_X();
+    }
+    XLeft=XLeft/SidesLeft.size();
+    for(auto& it : SidesRight){
+      XRight+=it->g_X();
+    }
+    XRight = XRight/SidesRight.size();
+    return XRight-XLeft;
+  }
+  if(ax == 1){
+    vector<Node*> SidesTop(GetSideNodes(true,true));
+    vector<Node*> SidesBot(GetSideNodes(false,true));
+    double YTop(0),YBot(0);
+    for(auto& it : SidesTop){
+      YTop+=it->g_Y();
+    }
+    for(auto& it : SidesBot){
+      YBot+=it->g_Y();
+    }
+    YTop = YTop / SidesTop.size();
+    YBot = YBot / SidesBot.size();
+    return YTop-YBot;
+  }
+}
+vector<Node*> System::GetSideNodes(bool TopOrLeft,bool Horizontal)
+{ /*
+             true, true
+              ______
+             |      |
+ true, false |      | false, false
+             |______|
+             false, true
+
+  */
+ set<Node*> NodeToVect;
+//              i / j / k
+ vector<tuple<int,int,int>> Index(Get_Boundary_Nodes(TopOrLeft,Horizontal,Lx,Ly));
+ /*for(auto& it : sites){
+   cout<<it.first%Lx<<" "<<it.first/Lx<<endl;
+ }*/
+ for(auto& I : Index) {
+     int i(get<0>(I)),j(get<1>(I)),k(get<2>(I));
+     /*cout<<i<<" "<<j<<" "<<k<<endl;
+     try{
+     cout<<sites.at(i+j*Lx)<<endl;}
+     catch(int e){cout<<"yep";throw 0;}*/
+     NodeToVect.insert(nodes[k][{i,j}]);
+ }
+ vector<Node*> Res(NodeToVect.begin(),NodeToVect.end());
+ return Res;
+}
